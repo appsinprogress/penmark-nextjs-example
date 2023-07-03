@@ -7,6 +7,7 @@ import { getAllPosts } from '../lib/api'
 import Head from 'next/head'
 import { CMS_NAME } from '../lib/constants'
 import Post from '../interfaces/post'
+import { useRef, useEffect } from 'react'
 
 type Props = {
   allPosts: Post[]
@@ -15,6 +16,30 @@ type Props = {
 export default function Index({ allPosts }: Props) {
   const heroPost = allPosts[0]
   const morePosts = allPosts.slice(1)
+
+  const penmarkRef = useRef(null)
+
+  //inject penmark script
+  useEffect(() => { 
+    const script = document.createElement('script');
+    script.setAttribute('type', 'module');
+    script.setAttribute('src', 'https://penmark.appsinprogress.com/dist/DraftsClient.js');
+    script.setAttribute('draftsFolder', '_drafts');
+    script.setAttribute('postsFolder', '_posts');
+    script.setAttribute('imagesFolder', 'public/assets/blog');
+    script.setAttribute('githubUsername', 'penmark-cms');
+    script.setAttribute('githubRepoName', 'penmark-nextjs-example');
+    script.async = true;
+
+    if (penmarkRef.current) {
+      penmarkRef.current.appendChild(script);
+    }
+
+    if(window.penmarkDraftsInit) {
+      window.penmarkDraftsInit();
+    }
+  }, [penmarkRef]);
+
   return (
     <>
       <Layout>
@@ -23,6 +48,7 @@ export default function Index({ allPosts }: Props) {
         </Head>
         <Container>
           <Intro />
+          <div ref={penmarkRef}></div>
           {heroPost && (
             <HeroPost
               title={heroPost.title}
